@@ -1,0 +1,156 @@
+{
+  "timezone": "Europe/Madrid",
+  "note": "Horario semanal. Las sesiones consecutivas de una asignatura se agrupan incluyendo los descansos intermedios. No incluye festivos ni vacaciones.",
+  "subjects": {
+    "ED": {
+      "name": "Entornos de desarrollo",
+      "teacher": "Jairo Bahillo Calvo"
+    },
+    "BD": {
+      "name": "Bases de datos",
+      "teacher": "Alberto Felipe Álvarez Diago"
+    },
+    "IPE1": {
+      "name": "Itinerario personal para la empleabilidad I",
+      "teacher": "María Elena García Marugan"
+    },
+    "Prg": {
+      "name": "Programación",
+      "teacher": "José Francisco Márquez Díaz"
+    },
+    "SI": {
+      "name": "Sistemas informáticos",
+      "teacher": "Felipe Moreno Díaz"
+    },
+    "LMSGI": {
+      "name": "Lenguajes de marcas y sistemas de gestión de información",
+      "teacher": "Pedro Aguirre Inchaurbe"
+    },
+    "INGPR": {
+      "name": "Inglés profesional",
+      "teacher": "Marta Díez González"
+    },
+    "SOS": {
+      "name": "Sostenibilidad aplicada al sistema productivo",
+      "teacher": "Felipe Moreno Díaz"
+    }
+  },
+  "days": [
+    {
+      "weekday": 1,
+      "blocks": [
+        {
+          "subject": "ED",
+          "start": "14:45",
+          "end": "16:25",
+          "teachingPeriods": 2
+        },
+        {
+          "subject": "BD",
+          "start": "16:40",
+          "end": "18:20",
+          "teachingPeriods": 2
+        },
+        {
+          "subject": "IPE1",
+          "start": "18:35",
+          "end": "20:15",
+          "teachingPeriods": 2
+        }
+      ]
+    },
+    {
+      "weekday": 2,
+      "blocks": [
+        {
+          "subject": "BD",
+          "start": "14:45",
+          "end": "17:30",
+          "teachingPeriods": 3
+        },
+        {
+          "subject": "INGPR",
+          "start": "17:30",
+          "end": "18:20",
+          "teachingPeriods": 1
+        },
+        {
+          "subject": "LMSGI",
+          "start": "18:35",
+          "end": "20:15",
+          "teachingPeriods": 2
+        }
+      ]
+    },
+    {
+      "weekday": 3,
+      "blocks": [
+        {
+          "subject": "IPE1",
+          "start": "14:45",
+          "end": "15:35",
+          "teachingPeriods": 1
+        },
+        {
+          "subject": "Prg",
+          "start": "15:35",
+          "end": "17:30",
+          "teachingPeriods": 2
+        },
+        {
+          "subject": "SI",
+          "start": "17:30",
+          "end": "20:15",
+          "teachingPeriods": 3
+        }
+      ]
+    },
+    {
+      "weekday": 4,
+      "blocks": [
+        {
+          "subject": "SI",
+          "start": "14:45",
+          "end": "17:30",
+          "teachingPeriods": 3
+        },
+        {
+          "subject": "Prg",
+          "start": "17:30",
+          "end": "20:15",
+          "teachingPeriods": 3
+        }
+      ]
+    },
+    {
+      "weekday": 5,
+      "blocks": [
+        {
+          "subject": "LMSGI",
+          "start": "14:45",
+          "end": "15:35",
+          "teachingPeriods": 1
+        },
+        {
+          "subject": "INGPR",
+          "start": "15:35",
+          "end": "16:25",
+          "teachingPeriods": 1
+        },
+        {
+          "subject": "SOS",
+          "start": "16:40",
+          "end": "17:30",
+          "teachingPeriods": 1
+        },
+        {
+          "subject": "Prg",
+          "start": "17:30",
+          "end": "20:15",
+          "teachingPeriods": 3
+        }
+      ]
+    }
+  ],
+  "periodMinutes": 50
+}

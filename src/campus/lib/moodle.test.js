@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {reconcileCourses,counts,safeUrl,readTable} from './moodle.js';
+const data={cursos:[{id:1,nombre:'Curso A'},{id:2,nombre:'Curso B'}],secciones:[{id:10,curso_id:1,nombre:'Tema'}],actividades:[{id:20,seccion_id:10,titulo:'Tarea',tipo:'Tarea',hash:'a',actualizado:'2026-09-27'},{id:21,seccion_id:10,titulo:'Archivo',tipo:'Archivo'}]};
+test('unchanged snapshots retain all references',()=>{const first=reconcileCourses([],data);assert.equal(reconcileCourses(first,structuredClone(data)),first);});
+test('only changed course gets replaced',()=>{const first=reconcileCourses([],data);const changed=structuredClone(data);changed.actividades[0].hash='b';const next=reconcileCourses(first,changed);assert.notEqual(next[0],first[0]);assert.equal(next[1],first[1]);});
+test('completion affects only tasks; deleted activities disappear',()=>{const courses=reconcileCourses([],data);assert.deepEqual(counts(courses[0],{}),{tasks:1,files:1});assert.deepEqual(counts(courses[0],{20:true}),{tasks:0,files:1});const next=reconcileCourses(courses,{...data,actividades:[]});assert.deepEqual(counts(next[0],{}),{tasks:0,files:0});});
+test('new courses and renamed sections are detected',()=>{const first=reconcileCourses([],data);const changed=structuredClone(data);changed.cursos.push({id:3,nombre:'Nuevo'});changed.secciones[0].nombre='Renombrado';const next=reconcileCourses(first,changed);assert.equal(next.length,3);assert.equal(next[0].sections[0].nombre,'Renombrado');});
+test('only http links are allowed',()=>{assert.equal(safeUrl('javascript:alert(1)'),null);assert.equal(safeUrl('data:text/html,test'),null);assert.equal(safeUrl('https://example.com'),'https://example.com/');});
+test('pagination respects lower server caps and never writes',async()=>{const offsets=[];const result=await readTable('cursos',undefined,async(url,options)=>{assert.equal(options.method,undefined);const offset=Number(url.searchParams.get('offset'));offsets.push(offset);return {ok:true,json:async()=>offset<3?[{id:offset}]:[]};});assert.equal(result.length,3);assert.deepEqual(offsets,[0,1,2,3]);});
+test('permission errors are surfaced',async()=>{await assert.rejects(()=>readTable('cursos',undefined,async()=>({ok:false,status:403})),/403/);});
