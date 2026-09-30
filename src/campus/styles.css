@@ -56,3 +56,6 @@
 .campus-shell *::-webkit-scrollbar{display:none;width:0;height:0}
 .campus-shell .sidebar{position:sticky;top:0;height:100dvh;overflow-y:auto}
 
+.campus-shell .class-card.is-recess progress::-webkit-progress-value { background: #77d8f5; }
+.campus-shell .class-card.is-recess progress::-moz-progress-bar { background: #77d8f5; }
+.campus-shell .class-card.is-recess .class-countdown { color: #77d8f5; }
