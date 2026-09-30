@@ -8,9 +8,11 @@ import Exams from './components/Exams.jsx';
 
 export default function App({onLogout, userId, logoutError}) {
   const [page, setPage] = useState('home');
+  const [moodleVisit,setMoodleVisit]=useState(0);
+  function navigate(next){if(next==='moodle')setMoodleVisit(n=>n+1);setPage(next);}
   return <div className="campus-shell">
-    <Sidebar page={page} onNavigate={setPage} onLogout={onLogout} logoutError={logoutError} />
-    <main aria-label="Pantalla principal"><Moodle key={userId} userId={userId} visible={page==='moodle'}/>{page==='horarios' && <Timetable/>}{page==='examenes' && <Exams userId={userId}/>}</main>
+    <Sidebar page={page} onNavigate={navigate} onLogout={onLogout} logoutError={logoutError} />
+    <main aria-label="Pantalla principal"><Moodle key={userId} userId={userId} visible={page==='moodle'} resetKey={moodleVisit}/>{page==='horarios' && <Timetable/>}{page==='examenes' && <Exams userId={userId}/>}</main>
     <ScheduleCard visible={['home','moodle','teams','yedra','examenes'].includes(page)} />
   </div>;
 }

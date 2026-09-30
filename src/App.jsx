@@ -31,6 +31,7 @@ export default function App() {
     })();
     return () => { active = false; subscription.unsubscribe(); };
   }, []);
+  useEffect(()=>{document.title=view==='campus'&&session?'Campus Académico':'Campus · Iniciar sesión';},[view,session]);
   async function login(credentials) {
     signingIn.current = true;
     try {

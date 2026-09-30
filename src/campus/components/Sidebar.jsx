@@ -25,5 +25,5 @@ export default function Sidebar({page, onNavigate, onLogout, logoutError}) {
     <nav aria-label="Navegación principal">{primary.map(item)}<a className="item" href="https://outlook.office.com/" target="_blank" rel="noopener noreferrer" aria-label="Outlook (abre en otra pestaña)" title="Outlook"><Icon name="outlook"/><span>Outlook</span><Icon name="external"/></a></nav>
     <hr/>
     <nav aria-label="Organización académica">{academic.map(item)}</nav>
-  <hr/><button className="item" type="button" onClick={onLogout} title="Cerrar sesión"><span aria-hidden="true">↪</span><span>Cerrar sesión</span></button>{logoutError && <p role="alert">{logoutError}</p>}</aside>;
+  <hr/><button className="item" type="button" onClick={onLogout} title="Cerrar sesión" aria-label="Cerrar sesión"><Icon name="logout"/><span>Cerrar sesión</span></button>{logoutError && <p role="alert">{logoutError}</p>}</aside>;
 }

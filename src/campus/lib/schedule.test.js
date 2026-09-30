@@ -30,3 +30,11 @@ test('End of day and weekends never display next',()=>{
  assert.equal(state('20:14:59').active.subject,'IPE1');
 });
 test('Cantabria winter timezone',()=>{const s=getClassState(schedule,new Date('2026-12-07T13:45:00Z'));assert.equal(s.active.subject,'ED');assert.equal(s.progress,0);});
+
+test('Overnight countdown points to next class, without revealing next label early',()=>{
+ const s=state('20:15:00');assert.equal(s.remaining,18.5*3600);assert.equal(s.next.subject,'BD');assert.equal(s.showNext,false);
+});
+test('Weekend countdown includes the winter DST change',()=>{
+ const s=getClassState(schedule,new Date('2026-10-23T20:15:00+02:00'));
+ assert.equal(s.remaining,67.5*3600);assert.equal(s.next.weekday,1);assert.equal(s.showNext,false);
+});

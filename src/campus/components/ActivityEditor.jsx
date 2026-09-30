@@ -1,0 +1,11 @@
+import {useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
+import ActivityIcon from './ActivityIcon.jsx';
+import './ActivityEditor.css';
+const types=['Tarea','Archivo','Foro','URL'];
+export default function ActivityEditor({item,onClose,onSave}){
+ const dialog=useRef(null),busy=useRef(false);const [type,setType]=useState('Tarea'),[saving,setSaving]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{if(item){setType(types.find(t=>t.toLowerCase()===item.tipo?.trim().toLowerCase())||item.tipo||'Tarea');setError('');dialog.current.showModal();}else dialog.current.close();},[item]);
+ async function save(event){event.preventDefault();if(busy.current)return;const values=new FormData(event.currentTarget);const titulo=String(values.get('title')).trim();if(!titulo){setError('El título es obligatorio.');return;}busy.current=true;setSaving(true);setError('');try{await onSave(item,{titulo,tipo:type});onClose();}catch{setError('No se pudo guardar. Revisa la conexión y ejecuta el SQL de edición de actividades en Supabase.');}finally{busy.current=false;setSaving(false);}}
+ return createPortal(<dialog className="activity-editor" ref={dialog} aria-labelledby="activity-editor-title" onCancel={event=>{event.preventDefault();if(!busy.current)onClose();}}><form key={item?.id||'empty'} onSubmit={save}><span>MOODLE · ACTIVIDAD</span><h2 id="activity-editor-title">Editar actividad</h2><fieldset disabled={saving}><label htmlFor="activity-title">Título</label><input autoFocus id="activity-title" name="title" required defaultValue={item?.titulo||''}/><legend>Tipo e icono</legend><div className="activity-types">{[...types,...(type&&!types.includes(type)?[type]:[])].map(value=><label key={value} className={type===value?'selected':''}><input type="radio" name="type" value={value} checked={type===value} onChange={()=>setType(value)}/><ActivityIcon type={value}/><strong>{value==='URL'?'Enlace (URL)':value}</strong></label>)}</div></fieldset>{error&&<p role="alert">{error}</p>}<footer><button type="button" onClick={onClose} disabled={saving}>Cancelar</button><button type="submit" disabled={saving}>{saving?'Guardando…':'Guardar cambios'}</button></footer></form></dialog>,document.body);
+}

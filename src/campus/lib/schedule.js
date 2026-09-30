@@ -1,4 +1,5 @@
 import { timetableSlots } from './timetable.js';
+import { deadlineTime } from './deadline.js';
 
 const at = time => { const [h, m] = time.split(':').map(Number); return h * 3600 + m * 60; };
 // Split merged subjects at recesses, including when the same subject resumes afterwards.
@@ -19,17 +20,24 @@ function sessions(blocks) {
 
 export function getClassState(schedule, now = new Date()) {
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
-    timeZone: schedule.timezone, weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+    timeZone: schedule.timezone, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
   }).formatToParts(now).map(p => [p.type, p.value]));
   const day = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(parts.weekday) + 1;
   const seconds = Number(parts.hour) * 3600 + Number(parts.minute) * 60 + Number(parts.second);
   const today = sessions(schedule.days.find(d => d.weekday === day)?.blocks || []);
   const active = today.find(b => seconds >= at(b.start) && seconds < at(b.end));
   const recess = today.length ? timetableSlots.find(slot => slot.recess && seconds >= at(slot.start) && seconds < at(slot.end)) : undefined;
-  const nextBlock = today.find(b => at(b.start) > seconds);
-  const next = nextBlock ? { ...nextBlock, weekday: day, daysAway: 0, secondsUntil: at(nextBlock.start) - seconds } : undefined;
+  let next;
+  for (let offset = 0; offset <= 7 && !next; offset++) {
+    const weekday = (day - 1 + offset) % 7 + 1;
+    const block = sessions(schedule.days.find(d => d.weekday === weekday)?.blocks || []).find(b => offset > 0 || at(b.start) > seconds);
+    if (block) {
+      const date = new Date(Date.UTC(+parts.year, +parts.month - 1, +parts.day + offset)).toISOString().slice(0, 10);
+      next = { ...block, weekday, daysAway: offset, secondsUntil: Math.ceil((deadlineTime(`${date}T${block.start}`) - now.getTime()) / 1000) };
+    }
+  }
   const interval = recess || active;
-  const showNext = Boolean(next && (interval || next.secondsUntil <= 20 * 60));
+  const showNext = Boolean(next && next.daysAway === 0 && (interval || next.secondsUntil <= 20 * 60));
   return {
     active, recess, next, showNext,
     remaining: interval ? at(interval.end) - seconds : next?.secondsUntil,

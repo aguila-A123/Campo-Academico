@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1 --configLoader native",
     "build": "vite build --configLoader native",
     "preview": "vite preview --host 127.0.0.1 --configLoader native",
-    "test": "vitest run src/Login.test.jsx src/lib/supabase.test.js && node --test src/campus/lib/*.test.js"
+    "test": "vitest run src/Login.test.jsx src/lib/supabase.test.js src/campus/components/Exams.test.jsx && node --test src/campus/lib/*.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
