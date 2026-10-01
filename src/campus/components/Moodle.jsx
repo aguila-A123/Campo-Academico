@@ -14,6 +14,33 @@ import './Moodle.css';
 const palettes=[['#064e3b','#10b981'],['#172554','#3b82f6'],['#450a0a','#ef4444']];
 function palette(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return palettes[h%palettes.length];}
 function plainText(html){const doc=new DOMParser().parseFromString(html||'','text/html');return doc.body.textContent||'';}
+function taskDetails(activity){
+  const text=plainText(activity.descripcion);
+  try{
+    const data=JSON.parse(text);
+    if(data&&typeof data==='object')return {text:plainText(data.descripcion||data.description||''),grade:data.estado_calificacion||data.estadoCalificacion||'',files:Array.isArray(data.archivos)?data.archivos:[]};
+  }catch{}
+  return {text,grade:'',files:[]};
+}
+
+function ExternalArrow(){return <svg className="moodle-external-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg>;}
+
+function TaskDetail({activity,completed,onToggle,onBack}){
+  const details=taskDetails(activity);
+  const graded=/calificad/i.test(String(details.grade));
+  const files=details.files.filter(file=>file&&safeUrl(file.url));
+  return <article className="moodle-task-detail">
+    <button className="moodle-back" type="button" onClick={onBack}>← Volver a las actividades</button>
+    <div className="moodle-task-detail-header"><ActivityIcon type={activity.tipo}/><h3>{activity.titulo}</h3></div>
+    <div className="moodle-task-meta"><span>{activity.fecha_apertura?`Apertura: ${dateLabel(activity.fecha_apertura)}`:'Apertura no indicada'}</span><span>{activity.fecha_cierre?`Cierre: ${dateLabel(activity.fecha_cierre)}`:'Cierre no indicado'}</span></div>
+    <div className="moodle-task-countdown">{(activity.fecha_apertura||activity.fecha_cierre)&&<TaskCountdown opening={activity.fecha_apertura} deadline={activity.fecha_cierre}/>}</div>
+    <p className="moodle-task-grade"><strong>Calificación:</strong> {graded?'Ya está calificada':'Aún no está calificada'}</p>
+    {details.grade&&<p className="moodle-task-status"><strong>Estado de entrega:</strong> {details.grade}</p>}
+    {details.text&&<p className="moodle-description-text">{details.text}</p>}
+    {files.length>0&&<div className="moodle-task-files"><h4>Archivos</h4>{files.map((file,index)=><a key={`${file.url}-${index}`} href={safeUrl(file.url)} target="_blank" rel="noopener noreferrer"><span>{file.nombre||file.name||'Abrir archivo'}</span><ExternalArrow/></a>)}</div>}
+    <div className="moodle-task-actions"><button className={`moodle-done${completed?' active':''}`} type="button" aria-pressed={completed} onClick={onToggle}>{completed?'✓ Realizada':'Marcar realizada'}</button>{safeUrl(activity.url)&&<a className="moodle-submit" href={safeUrl(activity.url)} target="_blank" rel="noopener noreferrer">Entregar tarea <ExternalArrow/></a>}</div>
+  </article>;
+}
 
 export const CourseCard=memo(function CourseCard({course,pending,files,onOpen,onContextMenu}){
   const [dark,light]=palette(course.id);
@@ -35,10 +62,10 @@ export default function Moodle({visible,userId,resetKey=0}) {
   const cache=useRef([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
-  const [selected,setSelected]=useState(null);
+  const [selected,setSelected]=useState(null),[selectedActivity,setSelectedActivity]=useState(null);
 
   const pageTop=useRef(null);
-  useEffect(()=>{setSelected(null);setMenu(null);if(resetKey)requestAnimationFrame(()=>pageTop.current?.scrollIntoView({block:'start'}));},[resetKey]);
+  useEffect(()=>{setSelected(null);setSelectedActivity(null);setMenu(null);if(resetKey)requestAnimationFrame(()=>pageTop.current?.scrollIntoView({block:'start'}));},[resetKey]);
   const [menu,setMenu]=useState(null),[mutationError,setMutationError]=useState('');
   const deleting=useRef(false),revision=useRef(0);
   useEffect(()=>{if(!visible)setMenu(null);},[visible]);
@@ -72,10 +99,11 @@ export default function Moodle({visible,userId,resetKey=0}) {
     async function refresh(){const version=revision.current;try{const next=await loadCourses(cache.current,controller.signal);if(stopped||deleting.current||version!==revision.current)return;if(next!==cache.current){cache.current=next;setCourses(next);}setError('');}catch(e){if(!stopped&&e.name!=='AbortError')setError(e.message);}finally{if(!stopped){setLoading(false);timer=setTimeout(refresh,60000);}}}
     refresh();return()=>{stopped=true;clearTimeout(timer);controller.abort();};
   },[]);
-  const open=useCallback(id=>{opener.current=document.activeElement;setSelected(id);},[]);
-  const close=()=>{setSelected(null);requestAnimationFrame(()=>opener.current?.focus());};
+  const open=useCallback(id=>{opener.current=document.activeElement;setSelected(id);setSelectedActivity(null);},[]);
+  const close=()=>{setSelected(null);setSelectedActivity(null);requestAnimationFrame(()=>opener.current?.focus());};
   useEffect(()=>{if(selected!==null&&visible){courseHeading.current?.focus();courseHeading.current?.scrollIntoView({block:'start'});}},[selected,visible]);
   const course=courses.find(c=>String(c.id)===String(selected));
+  const activity=course?.sections.flatMap(section=>section.activities).find(item=>String(item.id)===String(selectedActivity));
   return <div className="moodle-page" ref={pageTop} hidden={!visible}>
     {saveError&&<p className="moodle-notice" role="alert">{saveError}</p>}
     {mutationError&&<p className="moodle-notice" role="alert">{mutationError}</p>}
@@ -88,7 +116,7 @@ export default function Moodle({visible,userId,resetKey=0}) {
       <p className="moodle-storage-note">{saving?'Guardando en tu cuenta…':ready?'Actividades y filtro sincronizados con tu cuenta.':'Conectando con tu cuenta…'}</p>
 
       {hideCompleted&&course&&course.sections.every(section=>section.activities.every(a=>completed[String(a.id)]))&&<p className="moodle-muted">No quedan actividades pendientes. Usa el ojo para mostrar todas.</p>}
-      {!course?<p>El curso ya no está disponible.</p>:course.sections.length===0?<p>No hay secciones disponibles.</p>:course.sections.map(section=>({...section,activities:section.activities.filter(a=>!hideCompleted||!completed[String(a.id)])})).filter(section=>!hideCompleted||section.activities.length).map(section=><section className="moodle-section" key={section.id}><h3>{section.nombre}</h3>{!section.activities.length?<p className="moodle-muted">Sin actividades.</p>:section.activities.map(a=><article className="moodle-activity" key={a.id} tabIndex={0} onContextMenuCapture={event=>setMenu(contextPosition(event,{...a,kind:'activity'}))}><div className="moodle-activity-heading"><button className={`moodle-done${isTask(a)?'':' moodle-seen'}${completed[String(a.id)]?' active':''}`} type="button" aria-pressed={!!completed[String(a.id)]} disabled={!ready||saving} onClick={()=>toggleTask(a.id)}>{isTask(a)?(completed[String(a.id)]?'✓ Realizada':'Marcar realizada'):(completed[String(a.id)]?'✓ Visto':'Marcar visto')}</button></div><div className="moodle-activity-title"><ActivityIcon type={a.tipo}/><h4>{safeUrl(a.url)?<a className="moodle-activity-link" href={safeUrl(a.url)} target="_blank" rel="noopener noreferrer">{a.titulo}{isTask(a)&&<Icon name="external"/>}</a>:a.titulo}</h4></div>{a.descripcion&&<p className="moodle-description-text">{plainText(a.descripcion)}</p>}<div className="moodle-dates">{a.fecha_apertura&&<span>Apertura: {dateLabel(a.fecha_apertura)}</span>}{a.fecha_cierre&&<span>Cierre: {dateLabel(a.fecha_cierre)}</span>}{isTask(a)&&a.fecha_cierre&&<TaskCountdown deadline={a.fecha_cierre}/>}</div></article>)}</section>)}
+      {!course?<p>El curso ya no está disponible.</p>:selectedActivity&&activity?<TaskDetail activity={activity} completed={!!completed[String(activity.id)]} onToggle={()=>toggleTask(activity.id)} onBack={()=>setSelectedActivity(null)}/>:course.sections.length===0?<p>No hay secciones disponibles.</p>:course.sections.map(section=>({...section,activities:section.activities.filter(a=>!hideCompleted||!completed[String(a.id)])})).filter(section=>!hideCompleted||section.activities.length).map(section=><section className="moodle-section" key={section.id}><h3>{section.nombre}</h3>{!section.activities.length?<p className="moodle-muted">Sin actividades.</p>:section.activities.map(a=><article className="moodle-activity" key={a.id} tabIndex={0} onContextMenuCapture={event=>setMenu(contextPosition(event,{...a,kind:'activity'}))}><div className="moodle-activity-heading"><button className={`moodle-done${isTask(a)?'':' moodle-seen'}${completed[String(a.id)]?' active':''}`} type="button" aria-pressed={!!completed[String(a.id)]} disabled={!ready||saving} onClick={()=>toggleTask(a.id)}>{isTask(a)?(completed[String(a.id)]?'✓ Realizada':'Marcar realizada'):(completed[String(a.id)]?'✓ Visto':'Marcar visto')}</button></div><div className="moodle-activity-title"><ActivityIcon type={a.tipo}/><h4>{isTask(a)?<button className="moodle-activity-link moodle-task-open" type="button" onClick={()=>setSelectedActivity(a.id)}>{a.titulo}</button>:safeUrl(a.url)?<a className="moodle-activity-link" href={safeUrl(a.url)} target="_blank" rel="noopener noreferrer">{a.titulo}<Icon name="external"/></a>:a.titulo}</h4></div><div className="moodle-dates">{a.fecha_apertura&&<span>Apertura: {dateLabel(a.fecha_apertura)}</span>}{a.fecha_cierre&&<span>Cierre: {dateLabel(a.fecha_cierre)}</span>}{isTask(a)&&a.fecha_cierre&&<TaskCountdown deadline={a.fecha_cierre}/>}</div></article>)}</section>)}
     </section>
     <ActivityEditor item={editing} onClose={()=>setEditing(null)} onSave={saveActivity}/>
     <DeleteDialog item={pendingDelete} onCancel={()=>setPendingDelete(null)} onConfirm={remove} shared/>
