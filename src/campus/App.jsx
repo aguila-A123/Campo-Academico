@@ -1,3 +1,4 @@
+import DragonIndicator from './components/DragonIndicator.jsx';
 import './styles.css';
 import { useState } from 'react';
 import Sidebar from './components/Sidebar.jsx';
@@ -13,6 +14,7 @@ export default function App({onLogout, userId, logoutError}) {
   return <div className="campus-shell">
     <Sidebar page={page} onNavigate={navigate} onLogout={onLogout} logoutError={logoutError} />
     <main aria-label="Pantalla principal"><Moodle key={userId} userId={userId} visible={page==='moodle'} resetKey={moodleVisit}/>{page==='horarios' && <Timetable/>}{page==='examenes' && <Exams userId={userId}/>}</main>
+    <DragonIndicator key={userId} userId={userId}/>
     <ScheduleCard visible={['home','moodle','teams','yedra','examenes'].includes(page)} />
   </div>;
 }

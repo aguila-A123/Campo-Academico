@@ -1,1 +1,1 @@
-body{margin:0;background:#141413}#root{min-height:100svh}.session-loading{min-height:100svh;display:grid;place-items:center;color:#d4af57;font:16px Segoe UI,sans-serif}
+html,body,#root{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar,#root::-webkit-scrollbar{display:none;width:0;height:0}body{margin:0;background:#141413}#root{min-height:100svh}.session-loading{min-height:100svh;display:grid;place-items:center;color:#d4af57;font:16px Segoe UI,sans-serif}

@@ -47,5 +47,6 @@ export async function loadCourses(previous, signal) {
 }
 export const isTask = activity => activity.tipo?.trim().toLocaleLowerCase('es')==='tarea';
 export const isFile = activity => activity.tipo?.trim().toLocaleLowerCase('es')==='archivo';
+export const isFolder = activity => activity.tipo?.trim().toLocaleLowerCase('es')==='carpeta';
 export function safeUrl(raw) {try{const u=new URL(raw);return ['http:','https:'].includes(u.protocol)?u.href:null;}catch{return null;}}
 export function counts(course,completed){const all=course.sections.flatMap(s=>s.activities);return {tasks:all.filter(a=>isTask(a)&&!completed[String(a.id)]).length,files:all.filter(isFile).length};}
