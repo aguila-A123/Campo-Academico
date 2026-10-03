@@ -2,7 +2,7 @@
 
 1. Ejecuta `supabase/migrations/20261002_ia.sql` completo en Supabase → SQL Editor → Run.
 2. Recarga el campus, muestra el dragón con Ctrl + Alt + H y abre sus ajustes con clic derecho. El valor (0–100) solo se guarda, no controla aún un efecto. ChatGPT y Gemini son proveedores; la versión concreta del modelo depende del chat que abra Python.
-3. El clic izquierdo abre el chat. Los mensajes se guardan en `public.ia_mensajes`; la web consulta las respuestas cada 3 segundos mientras está abierto. Se muestran los últimos 50; el resto permanece en la base de datos.
+3. El clic izquierdo abre el chat. Los mensajes se guardan en `public.ia_mensajes`; la web consulta las respuestas cada 5 segundos, incluso si el chat está cerrado, para actualizar el estado visual del dragón. Se muestran los últimos 50; el resto permanece en la base de datos.
 
 ## Tablas
 

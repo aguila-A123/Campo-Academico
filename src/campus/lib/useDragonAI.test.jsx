@@ -13,14 +13,15 @@ beforeEach(()=>{
   let operation='read',value;const q={};queries.push({table,q});
   for(const method of ['select','eq','order','limit','abortSignal','maybeSingle','single'])q[method]=vi.fn(()=>q);
   q.insert=vi.fn(v=>{operation='insert';value=v;inserted=v;return q;});q.upsert=vi.fn(v=>{operation='upsert';value=v;return q;});
-  q.then=(resolve,reject)=>Promise.resolve(operation==='insert'?(fail?{error:{code:'500'}}:{data:{...value,estado:'pendiente',creado_en:'2026-10-02T10:00:00Z'}}):{data:table==='ia_preferencias'?(operation==='upsert'?{modelo:value.modelo,valor:value.valor}:{modelo:'gemini',valor:70}):[]}).then(resolve,reject);return q;
+  q.then=(resolve,reject)=>Promise.resolve(operation==='insert'?(fail?{error:{code:'500'}}:{data:{...value,estado:'pendiente',creado_en:'2026-10-02T10:00:00Z'}}):{data:table==='ia_preferencias'?(operation==='upsert'?{modelo:value.modelo,modo:value.modo||'fast',valor:value.valor}:{modelo:'gemini',modo:'fast',valor:70}):[]}).then(resolve,reject);return q;
  });
 });
 afterEach(()=>{cleanup();vi.clearAllMocks();});
 it('loads account settings and snapshots provider/value into the queued prompt',async()=>{
  const {result}=renderHook(()=>useDragonAI('user-a',true));await waitFor(()=>expect(result.current.ready).toBe(true));
  await act(async()=>{expect(await result.current.send(' Hola ')).toBe(true);});
- expect(inserted).toMatchObject({usuario_id:'user-a',modelo:'gemini',valor:70,prompt:'Hola'});expect(result.current.messages[0].estado).toBe('pendiente');
+ expect(inserted).toMatchObject({usuario_id:'user-a',modelo:'gemini',valor:70,prompt:'Hola, el siguiente mensaje que te mandare, quiero que me respondas lo mas importante y lo mas corto posible\n\nHola'});expect(result.current.messages[0].estado).toBe('pendiente');
+ expect(inserted).not.toHaveProperty('x');expect(inserted).not.toHaveProperty('y');expect(inserted).not.toHaveProperty('ancho');expect(inserted).not.toHaveProperty('alto');
  expect(queries.some(({q})=>q.eq.mock.calls.some(args=>args[0]==='usuario_id'&&args[1]==='user-a'))).toBe(true);
 });
 it('preserves the request id for retry after uncertain failure',async()=>{
