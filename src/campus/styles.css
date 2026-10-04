@@ -8,6 +8,8 @@
     .campus-shell .item{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:49px;padding:12px 16px;border:1px solid transparent;border-radius:8px;background:transparent;color:#c4c4c2;font:500 15px/1.5 Inter,Segoe UI,Arial,sans-serif;text-align:left;text-decoration:none;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
     .campus-shell .item:hover{background:#292925;color:#eeeeec}.campus-shell .item:focus-visible{outline:2px solid #d4af57;outline-offset:3px}
     .campus-shell .item[aria-current="page"]{color:#ededeb;background:#30302b;border-color:#4c4635}
+    .campus-shell .service-status-dot{width:9px;height:9px;margin-left:auto;border-radius:50%;flex:none;background:#c73434;box-shadow:0 0 0 2px #c7343422}
+    .campus-shell .service-status-dot.is-online{background:#35c46a;box-shadow:0 0 0 2px #35c46a22}
     .campus-shell svg{color:#d4af57;width:21px;height:21px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
     .campus-shell .external{margin-left:auto;width:16px;height:16px;color:#d4af57}
     .campus-shell hr{height:1px;width:calc(100% - 28px);border:0;background:#33332e;margin:25px auto}

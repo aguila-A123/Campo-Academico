@@ -6,6 +6,7 @@ import ScheduleCard from './components/ScheduleCard.jsx';
 import Moodle from './components/Moodle.jsx';
 import Timetable from './components/Timetable.jsx';
 import Exams from './components/Exams.jsx';
+import EmergencyIndicator from './components/EmergencyIndicator.jsx';
 
 export default function App({onLogout, userId, logoutError}) {
   const [page, setPage] = useState('home');
@@ -15,6 +16,7 @@ export default function App({onLogout, userId, logoutError}) {
     <Sidebar page={page} onNavigate={navigate} onLogout={onLogout} logoutError={logoutError} />
     <main aria-label="Pantalla principal"><Moodle key={userId} userId={userId} visible={page==='moodle'} resetKey={moodleVisit}/>{page==='horarios' && <Timetable/>}{page==='examenes' && <Exams userId={userId}/>}</main>
     <DragonIndicator key={userId} userId={userId}/>
+    <EmergencyIndicator key={`emergency-${userId}`} userId={userId}/>
     <ScheduleCard visible={['home','moodle','teams','yedra','examenes'].includes(page)} />
   </div>;
 }

@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react';
 import Icon from './Icon.jsx';
+import { supabase } from '../../lib/supabase.js';
 
 const primary = [['home','Home'],['moodle','Moodle'],['teams','Teams'],['yedra','Yedra']];
 const academic = [['examenes','Exámenes'],['horarios','Horarios']];
 
 export default function Sidebar({page, onNavigate, onLogout, logoutError}) {
   const [collapsed, setCollapsed] = useState(false);
+  const [moodleOk, setMoodleOk] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    async function checkHeartbeat() {
+      const { data } = await supabase.from('service_heartbeats').select('updated_at').eq('service_id', 'moodle').maybeSingle();
+      if (alive) setMoodleOk(Boolean(data?.updated_at && Date.now() - Date.parse(data.updated_at) <= 65000));
+    }
+    checkHeartbeat();
+    const timer = setInterval(checkHeartbeat, 10000);
+    return () => { alive = false; clearInterval(timer); };
+  }, []);
   useEffect(() => {
     const toggleWithSpace = event => {
       if (event.code !== 'Space' && event.key !== ' ') return;
@@ -19,7 +31,7 @@ export default function Sidebar({page, onNavigate, onLogout, logoutError}) {
     return () => window.removeEventListener('keydown', toggleWithSpace);
   }, []);
   const label = collapsed ? 'Expandir barra lateral' : 'Contraer barra lateral';
-  const item = ([id,name]) => <button key={id} className="item" type="button" title={name} aria-label={name} aria-current={page===id?'page':undefined} onClick={()=>onNavigate(id)}><Icon name={id}/><span>{name}</span></button>;
+  const item = ([id,name]) => <button key={id} className="item" type="button" title={name} aria-label={name} aria-current={page===id?'page':undefined} onClick={()=>onNavigate(id)}><Icon name={id}/><span>{name}</span>{id==='moodle'&&<span className={`service-status-dot ${moodleOk?'is-online':'is-offline'}`} aria-label={moodleOk?'Moodle actualizado':'Moodle sin actualización reciente'}/>}</button>;
   return <aside className={`sidebar${collapsed?' collapsed':''}`} id="sidebar" aria-label="Barra lateral">
     <button className="brand" type="button" aria-label={label} title={`${label} (Espacio)`} aria-keyshortcuts="Space" aria-controls="sidebar" aria-expanded={!collapsed} onClick={()=>setCollapsed(v=>!v)}><img src="/logo.png" alt="Logo del campus" width="110" height="110"/></button>
     <nav aria-label="Navegación principal">{primary.map(item)}<a className="item" href="https://outlook.office.com/" target="_blank" rel="noopener noreferrer" aria-label="Outlook (abre en otra pestaña)" title="Outlook"><Icon name="outlook"/><span>Outlook</span><Icon name="external"/></a></nav>

@@ -1,0 +1,60 @@
+.emergency-indicator{width:48px;height:48px;color:#ef4444;pointer-events:none;opacity:0;visibility:hidden;transform:translateY(calc(-100% - 16px));transition:transform .36s cubic-bezier(.22,.7,.25,1),opacity .28s ease,visibility 0s linear .36s}.emergency-indicator.is-active{pointer-events:auto;opacity:1;visibility:visible;transform:translateY(0);transition-delay:0s}.emergency-indicator svg{width:22px;height:22px;fill:#ef4444}@media(max-width:600px){.emergency-indicator{width:44px;height:44px}}
+.emergency-indicator{position:fixed;top:0;right:98px;z-index:10020;display:grid;place-items:center;padding:0;border:1px solid transparent;border-top:0;border-radius:0 0 12px 12px;background:linear-gradient(#241316,#241316) padding-box,linear-gradient(135deg,#ef4444,#8f2633) border-box;box-shadow:0 5px 18px #a33a4538;user-select:none}
+.emergency-indicator:focus-visible{outline:2px solid #ff8790;outline-offset:3px}
+.emergency-indicator svg{filter:drop-shadow(0 0 5px #ff5b6488)}
+.emergency-indicator.has-alert{animation:emergency-alert-pulse 1s ease-in-out infinite;box-shadow:0 0 12px #ff304f,0 0 30px #ff304f99}
+@keyframes emergency-alert-pulse{50%{filter:brightness(1.7);box-shadow:0 0 22px #ff304f,0 0 44px #ff304fbb}}
+.emergency-chat,.emergency-settings{font-family:inherit;color:#f6eeee;background:#211416f5;border:1px solid #a64a53;border-radius:16px;box-shadow:0 16px 50px #0008;box-sizing:border-box}
+.emergency-settings{position:fixed;top:72px;right:28px;z-index:10021;width:min(280px,calc(100vw - 32px));padding:18px}
+.emergency-settings header,.emergency-chat>header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.emergency-settings button,.emergency-chat button{font:inherit;background:#382024;color:#f6eeee;border:1px solid #85434b;border-radius:8px;padding:8px 12px;cursor:pointer}
+.emergency-settings label{display:flex;justify-content:space-between;margin:20px 0 12px}
+.emergency-settings input{width:100%;accent-color:#e34f5b}
+.emergency-range-labels{display:flex;justify-content:space-between;font-size:11px;color:#c7a5a8}
+.emergency-settings p,.emergency-chat p{color:#ffafb5}
+.emergency-chat{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:10019;width:min(520px,calc(100vw - 32px));height:min(430px,calc(100vh - 108px));min-width:300px;min-height:280px;display:flex;flex-direction:column;overflow:hidden}
+.emergency-chat>header{padding:16px 20px;border-bottom:1px solid #5b3035;cursor:grab}
+.emergency-chat>header>div{min-width:0}
+.emergency-header-content.is-chat{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.emergency-back-row{display:flex;align-items:center;gap:9px}
+.emergency-back-row button{margin-right:0!important}
+.emergency-chat header button{margin-right:8px}
+.emergency-chat h2{display:flex;align-items:center;gap:9px;margin:7px 0 0;font-size:19px;color:#f08a92;white-space:nowrap}
+.emergency-chat h2 svg{width:30px;height:30px;flex:0 0 30px;color:#ff5b64;fill:#ff5b64!important;filter:drop-shadow(0 0 5px #ff5b6488)}
+.emergency-chat h2 svg+*{min-width:0}
+.emergency-chat>header>div{overflow:hidden}
+.emergency-chat>header>div>span{display:block;white-space:nowrap}
+.emergency-chat header span{font-size:10px;letter-spacing:2px;color:#d5aeb2}
+.emergency-list,.emergency-messages{flex:1;min-height:0;overflow:auto;padding:18px}
+.emergency-list,.emergency-messages{scrollbar-width:none}
+.emergency-list::-webkit-scrollbar,.emergency-messages::-webkit-scrollbar{display:none;width:0;height:0}
+.emergency-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:8px}
+.emergency-list h3{grid-column:1/-1;margin:6px 0 0;color:#f08a92;font-size:12px}
+.emergency-pinned,.emergency-active-list{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.emergency-chat-card{display:flex;align-items:stretch;gap:4px;min-width:0}
+.emergency-chat-open{min-width:0;flex:1}
+.emergency-chat-open span{overflow:hidden;text-overflow:ellipsis}
+.emergency-chat-open.has-incoming{border-color:#ff3e52;box-shadow:0 0 12px #ff304f99}
+.emergency-chat-open svg{width:20px;height:20px;flex:0 0 20px;fill:#ff4b5d;filter:drop-shadow(0 0 5px #ff304f)}
+.emergency-chat-actions{display:flex;align-items:center;gap:4px}
+.emergency-chat-actions button{display:grid;place-items:center;padding:7px;color:#e3e3e3}
+.emergency-chat-actions svg{width:20px;height:20px;fill:currentColor}
+.emergency-chat-actions-footer{justify-content:flex-end;padding:8px 18px;border-top:1px solid #5b3035}
+.emergency-chat-actions-footer button{display:flex;align-items:center;gap:5px}
+.emergency-list button{display:flex;justify-content:space-between;align-items:center;text-align:left;padding:13px;background:#321d20}
+.emergency-list small{color:#d29da3}
+.emergency-messages article{max-width:80%;margin:0 0 12px;padding:9px 12px;border-radius:12px;background:#352126}
+.emergency-messages article.is-outgoing{margin-left:auto;background:#73333c}
+.emergency-messages small{color:#e2b8bc;font-size:11px}
+.emergency-messages p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;color:#fff}
+.emergency-chat form{display:flex;gap:8px;padding:14px 18px;border-top:1px solid #5b3035}
+.emergency-chat textarea{box-sizing:border-box;flex:1;resize:none;min-height:45px;max-height:87px;overflow-y:auto;scrollbar-width:none;background:#160e10;color:#fff;border:1px solid #754049;border-radius:9px;padding:10px 12px;font:inherit;line-height:21px}
+.emergency-chat textarea::-webkit-scrollbar{display:none;width:0;height:0}
+.emergency-chat form button{background:#ad3d49}
+.emergency-chat.is-dragging,.emergency-chat.is-resizing{user-select:none}
+.emergency-resize-handle{position:absolute;z-index:2}
+.emergency-resize-right{top:16px;right:-5px;width:10px;height:calc(100% - 32px);cursor:ew-resize}
+.emergency-resize-left{top:16px;left:-5px;width:10px;height:calc(100% - 32px);cursor:ew-resize}
+.emergency-resize-bottom{left:16px;bottom:-5px;width:calc(100% - 32px);height:10px;cursor:ns-resize}
+.emergency-resize-top{left:16px;top:-5px;width:calc(100% - 32px);height:10px;cursor:ns-resize}
+@media(max-width:600px){.emergency-indicator{right:82px;width:44px;height:44px}.emergency-chat{top:66px;height:calc(100vh - 80px)}}

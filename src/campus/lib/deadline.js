@@ -1,10 +1,7 @@
 const zone='Europe/Madrid';
-// Offset-bearing timestamps are instants; timezone-less database timestamps are Cantabria wall time.
-export function deadlineTime(value){
-  if(!value)return NaN;
-  const text=String(value).trim();
-  if(/(?:Z|[+-]\d{2}(?::?\d{2})?)$/i.test(text)&&/[T ]\d{2}:/.test(text))return Date.parse(text.replace(' ','T').replace(/([+-]\d{2})$/,'$1:00'));
-  const m=text.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?$/);
+function wallTime(value){
+  const text=String(value).trim().replace(' ','T').replace(/(?:Z|[+-]\d{2}(?::?\d{2})?)$/i,'');
+  const m=text.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?$/);
   if(!m)return NaN;
   const wall=Date.UTC(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
   let instant=wall;
@@ -15,7 +12,15 @@ export function deadlineTime(value){
   }
   return instant;
 }
-export function dateLabel(value){const t=deadlineTime(value);return Number.isFinite(t)?new Intl.DateTimeFormat('es-ES',{timeZone:zone,dateStyle:'short',timeStyle:'short'}).format(t):String(value||'');}
+// Offset-bearing timestamps are instants; timezone-less database timestamps are Cantabria wall time.
+export function deadlineTime(value,{assumeWallTime=false}={}){
+  if(!value)return NaN;
+  const text=String(value).trim();
+  if(assumeWallTime)return wallTime(text);
+  if(/(?:Z|[+-]\d{2}(?::?\d{2})?)$/i.test(text)&&/[T ]\d{2}:/.test(text))return Date.parse(text.replace(' ','T').replace(/([+-]\d{2})$/,'$1:00'));
+  return wallTime(text);
+}
+export function dateLabel(value,options){const t=deadlineTime(value,options);return Number.isFinite(t)?new Intl.DateTimeFormat('es-ES',{timeZone:zone,dateStyle:'short',timeStyle:'short'}).format(t):String(value||'');}
 export function countdown(end,now){
   if(!Number.isFinite(end))return null;
   const seconds=Math.max(0,Math.ceil((end-now)/1000));

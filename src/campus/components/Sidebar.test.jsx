@@ -2,6 +2,8 @@
 import { afterEach, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import Sidebar from './Sidebar.jsx';
+import { vi } from 'vitest';
+vi.mock('../../lib/supabase.js',()=>({supabase:{from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null})})})})}}));
 afterEach(cleanup);
 it('toggles with Space and ignores repeats, typing and interactive controls', () => {
   render(<><Sidebar page="home" onNavigate={()=>{}} onLogout={()=>{}}/><input aria-label="Texto"/></>);
