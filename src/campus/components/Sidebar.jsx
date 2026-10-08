@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Icon from './Icon.jsx';
 import { supabase } from '../../lib/supabase.js';
 
-const primary = [['home','Home'],['moodle','Moodle'],['teams','Teams'],['yedra','Yedra']];
+const primary = [['home','Home'],['moodle','Moodle'],['teams','Teams'],['programas','Programas']];
 const academic = [['examenes','Exámenes'],['horarios','Horarios']];
 
 export default function Sidebar({page, onNavigate, onLogout, logoutError}) {

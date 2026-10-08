@@ -5,14 +5,26 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --configLoader native",
-    "build": "vite build --configLoader native",
+    "build": "vite build --configLoader native && vite build --config pseint/vite.config.js --configLoader native",
     "preview": "vite preview --host 127.0.0.1 --configLoader native",
     "test": "vitest run src/Login.test.jsx src/lib/supabase.test.js src/campus/components/Exams.test.jsx && node --test src/campus/lib/*.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@codemirror/autocomplete": "^6.18.0",
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/lint": "^6.8.0",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.36.0",
+    "@dagrejs/dagre": "^1.1.0",
+    "@lezer/highlight": "^1.2.0",
+    "@uiw/react-codemirror": "^4.23.0",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "@xyflow/react": "^12.4.0",
+    "lucide-react": "^0.468.0"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.3",
