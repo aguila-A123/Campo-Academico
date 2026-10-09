@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Motor Java</title></head><body>
+<script src="https://cjrtnc.leaningtech.com/4.3/loader.js"></script>
+<script type="module">
+const send=data=>parent.postMessage({campusJava:true,...data},location.origin);
+let bridge,busy=false;
+try{
+  await cheerpjInit({version:17,status:'none',javaProperties:['user.language=en','user.country=US']});
+  for(const name of ['javac17.jar','campus-java.jar']){
+    const response=await fetch(new URL(name,location.href));if(!response.ok)throw Error('No se pudo cargar '+name);
+    cheerpOSAddStringFile('/str/'+name,new Uint8Array(await response.arrayBuffer()));
+  }
+  const library=await cheerpjRunLibrary('/str/javac17.jar:/str/campus-java.jar');
+  bridge=await library.CampusJava;send({type:'ready'});
+}catch(error){send({type:'failure',message:error?.message||'No se pudo cargar Java 17. Comprueba tu conexión y vuelve a intentar.'});}
+addEventListener('message',async event=>{
+  if(event.source!==parent||event.origin!==location.origin||event.data?.type!=='execute'||busy||!bridge)return;
+  const {id,files,entry,input='',checkOnly=false}=event.data;busy=true;
+  try{
+    await bridge.reset();for(const [name,source] of Object.entries(files))await bridge.addSource(name,source);
+    const pack=files[entry].match(/^\s*package\s+([\w.]+)\s*;/m)?.[1];
+    const main=(pack?pack+'.':'')+entry.split('/').at(-1).replace(/\.java$/,'');
+    const result=JSON.parse(await bridge.execute(main,input,checkOnly));send({id,type:'result',result});
+  }catch(error){send({id,type:'failure',message:error?.message||'No se pudo ejecutar Java.'});}
+  finally{busy=false;}
+});
+</script></body></html>

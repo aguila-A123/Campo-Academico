@@ -1,0 +1,6 @@
+{
+  "name": "java-noir", "version": "1.0.0", "private": true, "type": "module",
+  "scripts": {"dev": "concurrently -k \"node --watch server/index.mjs\" \"vite --host 127.0.0.1\"", "build": "vite build", "start": "node server/index.mjs", "test": "node --test server/*.test.mjs"},
+  "dependencies": {"react": "^18.3.1", "react-dom": "^18.3.1", "@monaco-editor/react": "^4.7.0", "monaco-editor": "^0.52.2", "express": "^5.1.0", "lucide-react": "^0.468.0"},
+  "devDependencies": {"vite": "^6.4.1", "@vitejs/plugin-react": "^4.7.0", "concurrently": "^9.2.0"}
+}
