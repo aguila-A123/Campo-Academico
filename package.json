@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --configLoader native",
-    "build": "vite build --configLoader native && vite build --config pseint/vite.config.js --configLoader native",
+    "build": "vite build --configLoader native && vite build --config pseint/vite.config.js --configLoader native && vite build --config netbeans/vite.config.js --configLoader native",
     "preview": "vite preview --host 127.0.0.1 --configLoader native",
     "test": "vitest run src/Login.test.jsx src/lib/supabase.test.js src/campus/components/Exams.test.jsx && node --test src/campus/lib/*.test.js"
   },
@@ -24,7 +24,9 @@
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
     "@xyflow/react": "^12.4.0",
-    "lucide-react": "^0.468.0"
+    "lucide-react": "^0.468.0",
+    "@monaco-editor/react": "^4.7.0",
+    "monaco-editor": "^0.52.2"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.3",
