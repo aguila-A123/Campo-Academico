@@ -4,7 +4,7 @@ const copies=new Map();
 export async function campusApi(url,options={}){
   const body=options.body?JSON.parse(options.body):{};
   if(url==='/health')return {runner:'Java 17 · navegador',nativeFolders:false};
-  if(url==='/execute')return executeJava(body,options.signal);
+  if(url==='/execute')return executeJava(body,options.signal,options.onEvent);
   if(url==='/projects'&&options.method==='POST'){
     const p={id:crypto.randomUUID(),name:body.name||'Proyecto importado',files:body.files||{},folders:body.folders||[],revision:1,storage:'session'};copies.set(p.id,p);return p;
   }

@@ -13,3 +13,8 @@
 .file-row.active { border-left-color: var(--tree-color); background: color-mix(in srgb, var(--tree-color) 12%, #0d1013); }
 .file-row .entry-dot { background: var(--tree-color); }
 .java-runtime-credit{position:fixed;right:16px;bottom:3px;font-size:10px;color:#7d8791;text-decoration:none;z-index:2}
+
+.modal textarea {width:100%;min-height:140px;background:#101419;color:#eee;border:1px solid #53616b;border-radius:8px;padding:12px;font:15px Consolas,monospace;resize:vertical;}
+.stdin-output {white-space:pre-wrap;max-height:120px;overflow:auto;color:#d9bd70;}
+
+.terminal-input{display:flex;align-items:center;gap:8px;color:#d9bd70;padding:5px 0}.terminal-input input{flex:1;min-width:80px;background:transparent;border:0;border-bottom:1px solid #796941;border-radius:0;color:#eee;font:inherit;padding:8px}.terminal-input button{background:#252b31;color:#d9bd70;border:1px solid #45505a;border-radius:5px;padding:7px;cursor:pointer}.live-transcript{white-space:pre-wrap;overflow-wrap:anywhere;}
