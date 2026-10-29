@@ -6,14 +6,14 @@ import {useDragonAI} from './useDragonAI.js';
 import {AISettings} from '../components/DragonAI.jsx';
 const mock=vi.hoisted(()=>({from:vi.fn()}));
 vi.mock('../../lib/supabase.js',()=>({supabase:{from:mock.from}}));
-let fail,inserted,queries;
+let fail,inserted,queries,heartbeat,remoteMessages;
 beforeEach(()=>{
- fail=false;inserted=null;queries=[];
+ fail=false;inserted=null;queries=[];heartbeat=null;remoteMessages=[];
  mock.from.mockImplementation(table=>{
   let operation='read',value;const q={};queries.push({table,q});
   for(const method of ['select','eq','order','limit','abortSignal','maybeSingle','single'])q[method]=vi.fn(()=>q);
   q.insert=vi.fn(v=>{operation='insert';value=v;inserted=v;return q;});q.upsert=vi.fn(v=>{operation='upsert';value=v;return q;});
-  q.then=(resolve,reject)=>Promise.resolve(operation==='insert'?(fail?{error:{code:'500'}}:{data:{...value,estado:'pendiente',creado_en:'2026-10-02T10:00:00Z'}}):{data:table==='ia_preferencias'?(operation==='upsert'?{modelo:value.modelo,modo:value.modo||'fast',valor:value.valor}:{modelo:'gemini',modo:'fast',valor:70}):[]}).then(resolve,reject);return q;
+  q.then=(resolve,reject)=>Promise.resolve(operation==='insert'?(fail?{error:{code:'500'}}:{data:{...value,estado:'pendiente',creado_en:'2026-10-02T10:00:00Z'}}):{data:table==='ia_preferencias'?(operation==='upsert'?{modelo:value.modelo,modo:value.modo||'fast',valor:value.valor}:{modelo:'gemini',modo:'fast',valor:70}):table==='service_heartbeats'?heartbeat:remoteMessages}).then(resolve,reject);return q;
  });
 });
 afterEach(()=>{cleanup();vi.clearAllMocks();});
@@ -36,4 +36,20 @@ it('persists model selection automatically',async()=>{
 it('allows exactly one provider and a range bounded 0 to 100',()=>{
  function Settings(){const [prefs,setPrefs]=useState({modelo:'chatgpt',valor:50});return <AISettings ai={{prefs,setPrefs,ready:true,saving:false,dirty:false}} onClose={()=>{}}/>;}
  render(<Settings/>);fireEvent.click(screen.getByRole('button',{name:'Gemini'}));expect(screen.getByRole('button',{name:'Gemini'}).getAttribute('aria-pressed')).toBe('true');expect(screen.getByRole('button',{name:'ChatGPT'}).getAttribute('aria-pressed')).toBe('false');expect(screen.getByRole('slider').min).toBe('0');expect(screen.getByRole('slider').max).toBe('100');
+});
+it('shows unavailable service without an endless waiting indicator for queued messages',async()=>{
+ remoteMessages=[{id:'pending',estado:'pendiente'}];
+ const {result}=renderHook(()=>useDragonAI('user-a',true));
+ await waitFor(()=>expect(result.current.service).toBe('offline'));
+ await waitFor(()=>expect(result.current.messages).toHaveLength(1));
+ expect(result.current.waiting).toBe(false);
+ expect(result.current.messageStatus(result.current.messages[0]).text).toMatch(/no está disponible/);
+});
+it('shows actual processing only when the worker heartbeat is recent',async()=>{
+ heartbeat={status:'online',updated_at:new Date().toISOString()};
+ remoteMessages=[{id:'active',estado:'procesando',iniciado_en:new Date().toISOString()}];
+ const {result}=renderHook(()=>useDragonAI('user-a',true));
+ await waitFor(()=>expect(result.current.service).toBe('online'));
+ await waitFor(()=>expect(result.current.waiting).toBe(true));
+ expect(result.current.messageStatus(result.current.messages[0]).text).toMatch(/Esperando la respuesta/);
 });

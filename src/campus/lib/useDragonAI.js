@@ -1,11 +1,30 @@
 import {useEffect,useRef,useState} from 'react';
 import {supabase} from '../../lib/supabase.js';
+import {serviceStatus,serviceLabels,messageStatus} from './dragonStatus.js';
 const defaults={modelo:'chatgpt',modo:'fast',dragon:false,valor:50,x:null,y:null,ancho:null,alto:null};
 const modePrefixes={fast:'Hola, el siguiente mensaje que te mandare, quiero que me respondas lo mas importante y lo mas corto posible',avanzado:'Hola, el siguiente mensaje que te mandare, respóndelo normal, no te limites, tranquilo'};
 export function useDragonAI(userId,opened){
  const [prefs,setPrefs]=useState(defaults),[saved,setSaved]=useState(null),[ready,setReady]=useState(false),[saving,setSaving]=useState(false),[settingsError,setSettingsError]=useState(''),[reload,setReload]=useState(0),[saveRetry,setSaveRetry]=useState(0);
  const [messages,setMessages]=useState([]),[chatError,setChatError]=useState(''),[loading,setLoading]=useState(true),[sending,setSending]=useState(false),[chatReload,setChatReload]=useState(0);
  const busy=useRef(false),version=useRef(0),request=useRef(null);
+ const [serviceSnapshot,setServiceSnapshot]=useState({checked:false,row:null,error:false});
+ const [now,setNow]=useState(Date.now);
+ const service=serviceStatus(serviceSnapshot,now);
+ useEffect(()=>{
+  if(!userId)return;
+  let stopped=false,inFlight=false;const controller=new AbortController();
+  setServiceSnapshot({checked:false,row:null,error:false});
+  async function refreshStatus(){
+   if(inFlight)return;inFlight=true;
+   try{
+    const {data,error}=await supabase.from('service_heartbeats').select('updated_at,status').eq('service_id','ia').maybeSingle().abortSignal(AbortSignal.any([controller.signal,AbortSignal.timeout(10000)]));
+    if(!stopped){setNow(Date.now());setServiceSnapshot({checked:true,row:error?null:data,error:Boolean(error)});}
+   }catch{if(!stopped){setNow(Date.now());setServiceSnapshot({checked:true,row:null,error:true});}}
+   finally{inFlight=false;}
+  }
+  refreshStatus();const timer=setInterval(refreshStatus,5000);
+  return()=>{stopped=true;controller.abort();clearInterval(timer);};
+ },[userId]);
  const dirty=!saved||prefs.modelo!==saved.modelo||(prefs.modo||defaults.modo)!==(saved.modo||defaults.modo)||Boolean(prefs.dragon)!==Boolean(saved.dragon)||prefs.valor!==saved.valor||(prefs.x??null)!==(saved.x??null)||(prefs.y??null)!==(saved.y??null)||(prefs.ancho??null)!==(saved.ancho??null)||(prefs.alto??null)!==(saved.alto??null);
  useEffect(()=>{
   let alive=true;const controller=new AbortController();setReady(false);
@@ -28,7 +47,7 @@ export function useDragonAI(userId,opened){
   if(!userId)return;
   let stopped=false,inFlight=false;const controller=new AbortController();
   async function refresh(){if(inFlight||busy.current)return;inFlight=true;const revision=version.current;
-   try{const {data,error}=await supabase.from('ia_mensajes').select('id,modelo,dragon,valor,prompt,respuesta,estado,error,creado_en').eq('usuario_id',userId).order('creado_en',{ascending:false}).limit(50).abortSignal(controller.signal);if(error)throw error;if(!stopped&&revision===version.current){setMessages([...data].reverse());setChatError('');}}
+   try{const {data,error}=await supabase.from('ia_mensajes').select('id,modelo,dragon,valor,prompt,respuesta,estado,error,creado_en,iniciado_en').eq('usuario_id',userId).order('creado_en',{ascending:false}).limit(50).abortSignal(AbortSignal.any([controller.signal,AbortSignal.timeout(10000)]));if(error)throw error;if(!stopped&&revision===version.current){setMessages([...data].reverse());setChatError('');}}
    catch{if(!stopped)setChatError('No se pudieron cargar los mensajes. Revisa la conexión y el SQL de IA.');}
    finally{inFlight=false;if(!stopped)setLoading(false);}
   }
@@ -41,7 +60,7 @@ export function useDragonAI(userId,opened){
   if(mensaje.length>20000)return false;
   busy.current=true;version.current++;setSending(true);setChatError('');
   if(!request.current||request.current.prompt!==mensaje||request.current.modelo!==modelo||request.current.dragon!==Boolean(prefs.dragon)||request.current.valor!==prefs.valor)request.current={id:crypto.randomUUID(),usuario_id:userId,modelo,dragon:Boolean(prefs.dragon),valor:prefs.valor,prompt:mensaje};
-  try{const payload=request.current;const {data,error}=await supabase.from('ia_mensajes').insert(payload).select('id,modelo,dragon,valor,prompt,respuesta,estado,error,creado_en').single();if(error){if(error.code==='23505'){request.current=null;setChatReload(n=>n+1);return true;}throw error;}setMessages(rows=>[...rows.filter(row=>row.id!==data.id),data].slice(-50));request.current=null;return true;}
+  try{const payload=request.current;const {data,error}=await supabase.from('ia_mensajes').insert(payload).select('id,modelo,dragon,valor,prompt,respuesta,estado,error,creado_en,iniciado_en').single().abortSignal(AbortSignal.timeout(15000));if(error){if(error.code==='23505'){request.current=null;setChatReload(n=>n+1);return true;}throw error;}setMessages(rows=>[...rows.filter(row=>row.id!==data.id),data].slice(-50));request.current=null;return true;}
   catch{setChatError('No se pudo confirmar el envío. El texto se conserva para reintentarlo.');return false;}
   finally{busy.current=false;version.current++;setSending(false);}
  }
@@ -51,6 +70,7 @@ export function useDragonAI(userId,opened){
   if(error){setChatError('No se pudo borrar el historial. Revisa la conexión y el SQL de IA.');return false;}
   version.current++;setMessages([]);setChatError('');return true;
  }
- const waiting=sending||messages.some(message=>message.estado==='pendiente'||message.estado==='procesando');
- return {prefs,ready,saving,dirty,settingsError,setPrefs,retrySettings:()=>ready?setSaveRetry(n=>n+1):setReload(n=>n+1),messages,chatError,loading,sending,waiting,send,clearMessages};
+ const getMessageStatus=message=>messageStatus(message,service,now);
+ const waiting=sending||messages.some(message=>getMessageStatus(message).waiting);
+ return {prefs,ready,saving,dirty,settingsError,setPrefs,retrySettings:()=>ready?setSaveRetry(n=>n+1):setReload(n=>n+1),messages,chatError,loading,sending,waiting,send,clearMessages,service,serviceMessage:serviceLabels[service],messageStatus:getMessageStatus};
 }
