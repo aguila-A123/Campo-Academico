@@ -95,10 +95,8 @@ export function useEmergencyChat(userId,opened){
   if(!chat)return false;
   setError('');
   try{
-   const {error:updateError}=await supabase.from('emergency_chats').update({activo:false,closed_at:new Date().toISOString()}).eq('id',chat.id);
-   if(updateError)throw updateError;
-   const {error:messageError}=await supabase.from('emergency_messages').insert({chat_id:chat.id,remitente:chat.remitente,mensaje:'🚨 El Chat de Emergencia se cerró. Si necesitas ayuda, escribe /alerta <mensaje>.',direccion:'salida',enviado:false,enviado_por:userId});
-   if(messageError)throw messageError;
+   const {data:closed,error:closeError}=await supabase.rpc('emergency_cerrar_chat',{p_chat:chat.id});
+   if(closeError||closed!==true)throw closeError||new Error('No se confirmó el cierre');
    setAlertIds(previous=>{const next=new Set(previous);next.delete(chat.id);return next;});
    setChats(rows=>rows.map(row=>row.id===chat.id?{...row,activo:false,closed_at:new Date().toISOString()}:row));setSelectedChat(row=>row?.id===chat.id?{...row,activo:false,closed_at:new Date().toISOString()}:row);return true;
   }catch{setError('No se pudo cerrar el chat de emergencia.');return false;}
